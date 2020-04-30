@@ -11,13 +11,28 @@ fn lerp(a: Vec3, b: Vec3, t: f64) -> Vec3 {
     (1.-t)*a + t*b
 }
 
+fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> bool {
+    let oc: Vec3 = r.origin() - center;
+    let a = r.direction().dot(r.direction());
+    let b = 2.0 * oc.dot(r.direction());
+    let c = oc.dot(oc) - radius*radius;
+    let discriminant = b*b - 4.*a*c;
+    return discriminant > 0.
+}
+
 fn ray_color(r: Ray) -> u32 {
-    let unit_direction =r.direction().norm();
+    let color = if hit_sphere(Vec3::new(0.,0.,-1.), 0.5, r) {
+          Vec3::new(1., 0., 0.)
+    } else {
+        let unit_direction =r.direction().norm();
     let t = 0.5*(unit_direction.y() + 1.);
 
     let white = Vec3::new(1.,1.,1.);
     let sky_blue = Vec3::new(0.5, 0.7, 1.);
-    let (r,g,b) = lerp(white, sky_blue, t).to_rgb();
+    lerp(white, sky_blue, t)
+    };
+    let (r,g,b) = color.to_rgb();
+
     from_u8_rgb(r,g,b)
 }
 
