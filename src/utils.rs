@@ -1,5 +1,16 @@
 use crate::vec3::Vec3;
 
+use rand::distributions::OpenClosed01;
+use rand::{thread_rng, Rng};
+
+pub fn random_in_01() -> f64 {
+    thread_rng().sample(OpenClosed01)
+}
+
+pub fn random_in_range(min: f64, max: f64) -> f64 {
+    thread_rng().gen_range(min, max)
+}
+
 pub fn clamp(n: f64, min: f64, max: f64) -> f64 {
     n.max(min).min(max)
 }

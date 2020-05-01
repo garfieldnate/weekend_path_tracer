@@ -1,4 +1,4 @@
-use crate::utils::clamp;
+use crate::utils::{clamp, random_in_01, random_in_range};
 use rand::distributions::OpenClosed01;
 use rand::{thread_rng, Rng};
 use std::fmt::Display;
@@ -18,19 +18,17 @@ impl Vec3 {
         Self { x, y, z }
     }
     pub fn random() -> Self {
-        let mut rng = thread_rng();
         Self {
-            x: rng.sample(OpenClosed01),
-            y: rng.sample(OpenClosed01),
-            z: rng.sample(OpenClosed01),
+            x: random_in_01(),
+            y: random_in_01(),
+            z: random_in_01(),
         }
     }
     pub fn random_in_range(min: f64, max: f64) -> Self {
-        let mut rng = thread_rng();
         Self {
-            x: rng.gen_range(min, max),
-            y: rng.gen_range(min, max),
-            z: rng.gen_range(min, max),
+            x: random_in_range(min, max),
+            y: random_in_range(min, max),
+            z: random_in_range(min, max),
         }
     }
     pub fn x(&self) -> f64 {

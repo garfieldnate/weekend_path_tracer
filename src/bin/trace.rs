@@ -5,11 +5,9 @@ use weekend_path_tracer::{
     hittable_list::HittableList,
     ray::Ray,
     sphere::Sphere,
+    utils::{random_in_01, random_in_range},
     vec3::Vec3,
 };
-
-use rand::distributions::OpenClosed01;
-use rand::{thread_rng, Rng};
 
 const IMAGE_WIDTH: usize = 200;
 const IMAGE_HEIGHT: usize = 100;
@@ -24,10 +22,6 @@ fn vec_to_u8(color: Vec3) -> u32 {
 
 fn lerp(a: Vec3, b: Vec3, t: f64) -> Vec3 {
     (1. - t) * a + t * b
-}
-
-fn random_in_01() -> f64 {
-    thread_rng().sample(OpenClosed01)
 }
 
 // From book: produces random points in the unit ball offset along the surface normal.
@@ -46,6 +40,19 @@ fn random_in_unit_sphere() -> Vec3 {
     }
 }
 
+// From book: However, we are interested in a Lambertian distribution, which has a
+// distribution of cos(𝜙). True Lambertian has the probability higher for ray scattering
+// close to the normal, but the distribution is more uniform. This is achieved by picking
+// points on the surface of the unit sphere, offset along the surface normal. Picking points
+// on the sphere can be achieved by picking points in the unit ball, and then normalizing
+// those.
+fn random_unit_vector() -> Vec3 {
+    let a = random_in_range(0., 2. * std::f64::consts::PI);
+    let z = random_in_range(-1., 1.);
+    let r = (1. - z * z).sqrt();
+    return Vec3::new(r * a.cos(), r * a.sin(), z);
+}
+
 fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if depth <= 0 {
@@ -54,7 +61,7 @@ fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
         // use EPSILON to avoid salt-and-pepper noise
         match world.hit(r, EPSILON, std::f64::INFINITY) {
             Some(hit) => {
-                let target = hit.p + hit.normal + random_in_unit_sphere();
+                let target = hit.p + hit.normal + random_unit_vector();
                 0.5 * ray_color(Ray::new(hit.p, target - hit.p), world, depth - 1)
             }
             None => {
