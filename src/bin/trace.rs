@@ -1,4 +1,11 @@
-use weekend_path_tracer::{canvas::Canvas, ray::Ray, vec3::Vec3};
+use weekend_path_tracer::{
+    canvas::Canvas,
+    consts::{sky_blue, white},
+    hittable_list::HittableList,
+    ray::Ray,
+    sphere::Sphere,
+    vec3::Vec3,
+};
 const IMAGE_WIDTH: usize = 200;
 const IMAGE_HEIGHT: usize = 100;
 
@@ -11,36 +18,20 @@ fn lerp(a: Vec3, b: Vec3, t: f64) -> Vec3 {
     (1. - t) * a + t * b
 }
 
-fn hit_sphere(center: Vec3, radius: f64, r: Ray) -> f64 {
-    let oc: Vec3 = r.origin() - center;
-    let a = r.direction().dot(r.direction());
-    let b = 2.0 * oc.dot(r.direction());
-    let c = oc.dot(oc) - radius * radius;
-    let discriminant = b * b - 4. * a * c;
-    if discriminant < 0. {
-        -1.
-    } else {
-        (-b - discriminant.sqrt()) / (2. * a)
-    }
-}
-
 fn norm_to_color(norm: Vec3) -> Vec3 {
     0.5 * Vec3::new(norm.x() + 1., norm.y() + 1., norm.z() + 1.)
 }
 
-fn ray_color(r: Ray) -> u32 {
-    let t = hit_sphere(Vec3::new(0., 0., -1.), 0.5, r);
-    let color = if t > 0. {
-        let norm = (r.at(t) - Vec3::new(0., 0., -1.)).norm();
-        norm_to_color(norm)
-    } else {
-        let unit_direction = r.direction().norm();
-        let t = 0.5 * (unit_direction.y() + 1.);
-
-        let white = Vec3::new(1., 1., 1.);
-        let sky_blue = Vec3::new(0.5, 0.7, 1.);
-        lerp(white, sky_blue, t)
+fn ray_color(r: Ray, world: &HittableList) -> u32 {
+    let color = match world.hit(r, 0., std::f64::INFINITY) {
+        Some(hit) => norm_to_color(hit.normal),
+        None => {
+            let unit_direction = r.direction().norm();
+            let t = 0.5 * (unit_direction.y() + 1.);
+            lerp(white(), sky_blue(), t)
+        }
     };
+
     let (r, g, b) = color.to_rgb();
 
     from_u8_rgb(r, g, b)
@@ -52,6 +43,10 @@ fn get_background_image_data() -> Vec<u32> {
     let vertical = Vec3::new(0., 2., 0.);
     let origin = Vec3::new(0., 0., 0.);
 
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5)));
+    world.add(Box::new(Sphere::new(Vec3::new(0., -100.5, -1.), 100.)));
+
     let mut buffer: Vec<u32> = Vec::with_capacity(IMAGE_HEIGHT * IMAGE_WIDTH);
     for j in (0..IMAGE_HEIGHT).rev() {
         println!("Scanlines remaining: {}", j);
@@ -59,7 +54,7 @@ fn get_background_image_data() -> Vec<u32> {
             let u = i as f64 / IMAGE_WIDTH as f64;
             let v = j as f64 / IMAGE_HEIGHT as f64;
             let ray = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical);
-            buffer.push(ray_color(ray));
+            buffer.push(ray_color(ray, &world));
         }
     }
     buffer

@@ -1,14 +1,15 @@
-
 use crate::vec3::Vec3;
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Ray {
     origin: Vec3,
-    direction: Vec3
+    direction: Vec3,
 }
 
 impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) -> Self { Self { origin, direction } }
+    pub fn new(origin: Vec3, direction: Vec3) -> Self {
+        Self { origin, direction }
+    }
     pub fn origin(&self) -> Vec3 {
         self.origin
     }
@@ -19,8 +20,6 @@ impl Ray {
         self.origin + self.direction * t
     }
 }
-
-
 
 // class ray {
 //     public:
