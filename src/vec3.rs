@@ -1,5 +1,6 @@
+use crate::utils::clamp;
 use std::fmt::Display;
-use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, Neg, Div, DivAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Vec3 {
@@ -7,6 +8,8 @@ pub struct Vec3 {
     y: f64,
     z: f64,
 }
+
+const COLOR_MAX: f64 = 256.;
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -25,7 +28,7 @@ impl Vec3 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
     pub fn magnitude(&self) -> f64 {
-       self.length_squared().sqrt()
+        self.length_squared().sqrt()
     }
     pub fn norm(&self) -> Vec3 {
         let magnitude = self.magnitude();
@@ -46,8 +49,12 @@ impl Vec3 {
         }
     }
     // assumes that x,y,z are in [0,1], outputs (r,g,b)
-    pub fn to_rgb(&self) -> (u8,u8,u8) {
-        ((255.999 * self.x) as u8,(255.999 * self.y) as u8,(255.999 * self.z) as u8)
+    pub fn to_rgb(&self) -> (u8, u8, u8) {
+        (
+            (COLOR_MAX * clamp(self.x, 0., 0.999)) as u8,
+            (COLOR_MAX * clamp(self.y, 0., 0.999)) as u8,
+            (COLOR_MAX * clamp(self.z, 0., 0.999)) as u8,
+        )
     }
 }
 
@@ -124,14 +131,14 @@ impl MulAssign<f64> for Vec3 {
 impl Div<f64> for Vec3 {
     type Output = Vec3;
     fn div(self, scalar: f64) -> Vec3 {
-        let inv_scalar = 1./scalar;
+        let inv_scalar = 1. / scalar;
         self * inv_scalar
     }
 }
 
 impl DivAssign<f64> for Vec3 {
     fn div_assign(&mut self, scalar: f64) {
-        let inv_scalar = 1./scalar;
+        let inv_scalar = 1. / scalar;
         *self = Self {
             x: self.x * inv_scalar,
             y: self.y * inv_scalar,
