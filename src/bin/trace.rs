@@ -53,6 +53,22 @@ fn random_unit_vector() -> Vec3 {
     return Vec3::new(r * a.cos(), r * a.sin(), z);
 }
 
+// From the book: For the two methods above we had a random vector, first of random length
+// and then of unit length, offset from the hit point by the normal. It may not be
+// immediately obvious why the vectors should be displaced by the normal. A more intuitive
+// approach is to have a uniform scatter direction for all angles away from the hit point,
+// with no dependence on the angle from the normal. Many of the first raytracing papers
+// used this diffuse method (before adopting Lambertian diffuse).
+fn random_in_hemisphere(normal: Vec3) -> Vec3 {
+    let in_unit_sphere = random_in_unit_sphere();
+    if in_unit_sphere.dot(normal) > 0. {
+        // In the same hemisphere as the normal
+        in_unit_sphere
+    } else {
+        -in_unit_sphere
+    }
+}
+
 fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if depth <= 0 {
