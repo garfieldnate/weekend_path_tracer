@@ -1,4 +1,6 @@
 use crate::utils::clamp;
+use rand::distributions::OpenClosed01;
+use rand::{thread_rng, Rng};
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
@@ -14,6 +16,22 @@ const COLOR_MAX: f64 = 256.;
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
+    }
+    pub fn random() -> Self {
+        let mut rng = thread_rng();
+        Self {
+            x: rng.sample(OpenClosed01),
+            y: rng.sample(OpenClosed01),
+            z: rng.sample(OpenClosed01),
+        }
+    }
+    pub fn random_in_range(min: f64, max: f64) -> Self {
+        let mut rng = thread_rng();
+        Self {
+            x: rng.gen_range(min, max),
+            y: rng.gen_range(min, max),
+            z: rng.gen_range(min, max),
+        }
     }
     pub fn x(&self) -> f64 {
         self.x
@@ -50,10 +68,14 @@ impl Vec3 {
     }
     // assumes that x,y,z are in [0,1], outputs (r,g,b)
     pub fn to_rgb(&self) -> (u8, u8, u8) {
+        // apply gamma correction (gamma 2, or raised to the 1/2 power)
+        let r = self.x.sqrt();
+        let g = self.y.sqrt();
+        let b = self.z.sqrt();
         (
-            (COLOR_MAX * clamp(self.x, 0., 0.999)) as u8,
-            (COLOR_MAX * clamp(self.y, 0., 0.999)) as u8,
-            (COLOR_MAX * clamp(self.z, 0., 0.999)) as u8,
+            (COLOR_MAX * clamp(r, 0., 0.999)) as u8,
+            (COLOR_MAX * clamp(g, 0., 0.999)) as u8,
+            (COLOR_MAX * clamp(b, 0., 0.999)) as u8,
         )
     }
 }
