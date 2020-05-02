@@ -19,3 +19,13 @@ pub fn clamp(n: f64, min: f64, max: f64) -> f64 {
 pub fn norm_to_color(norm: Vec3) -> Vec3 {
     0.5 * Vec3::new(norm.x() + 1., norm.y() + 1., norm.z() + 1.)
 }
+
+pub fn random_in_unit_sphere() -> Vec3 {
+    // TODO: this seems inefficient
+    loop {
+        let p = Vec3::random_in_range(-1., 1.);
+        if p.length_squared() < 1. {
+            break p;
+        }
+    }
+}

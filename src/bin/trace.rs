@@ -1,11 +1,14 @@
+use std::sync::Arc;
 use weekend_path_tracer::{
     camera::Camera,
     canvas::Canvas,
     consts::{sky_blue, white},
+    diffuse::Lambertian,
     hittable_list::HittableList,
+    metal::Metal,
     ray::Ray,
     sphere::Sphere,
-    utils::{random_in_01, random_in_range},
+    utils::random_in_01,
     vec3::Vec3,
 };
 
@@ -24,51 +27,6 @@ fn lerp(a: Vec3, b: Vec3, t: f64) -> Vec3 {
     (1. - t) * a + t * b
 }
 
-// From book: produces random points in the unit ball offset along the surface normal.
-// This corresponds to picking directions on the hemisphere with high probability close
-// to the normal, and a lower probability of scattering rays at grazing angles. The
-// distribution present scales by the cos3(𝜙) where 𝜙 is the angle from the normal. This
-// is useful since light arriving at shallow angles spreads over a larger area, and thus
-// has a lower contribution to the final color.
-fn random_in_unit_sphere() -> Vec3 {
-    // TODO: this seems inefficient
-    loop {
-        let p = Vec3::random_in_range(-1., 1.);
-        if p.length_squared() < 1. {
-            break p;
-        }
-    }
-}
-
-// From book: However, we are interested in a Lambertian distribution, which has a
-// distribution of cos(𝜙). True Lambertian has the probability higher for ray scattering
-// close to the normal, but the distribution is more uniform. This is achieved by picking
-// points on the surface of the unit sphere, offset along the surface normal. Picking points
-// on the sphere can be achieved by picking points in the unit ball, and then normalizing
-// those.
-fn random_unit_vector() -> Vec3 {
-    let a = random_in_range(0., 2. * std::f64::consts::PI);
-    let z = random_in_range(-1., 1.);
-    let r = (1. - z * z).sqrt();
-    return Vec3::new(r * a.cos(), r * a.sin(), z);
-}
-
-// From the book: For the two methods above we had a random vector, first of random length
-// and then of unit length, offset from the hit point by the normal. It may not be
-// immediately obvious why the vectors should be displaced by the normal. A more intuitive
-// approach is to have a uniform scatter direction for all angles away from the hit point,
-// with no dependence on the angle from the normal. Many of the first raytracing papers
-// used this diffuse method (before adopting Lambertian diffuse).
-fn random_in_hemisphere(normal: Vec3) -> Vec3 {
-    let in_unit_sphere = random_in_unit_sphere();
-    if in_unit_sphere.dot(normal) > 0. {
-        // In the same hemisphere as the normal
-        in_unit_sphere
-    } else {
-        -in_unit_sphere
-    }
-}
-
 fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if depth <= 0 {
@@ -76,10 +34,12 @@ fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
     } else {
         // use EPSILON to avoid salt-and-pepper noise
         match world.hit(r, EPSILON, std::f64::INFINITY) {
-            Some(hit) => {
-                let target = hit.p + hit.normal + random_unit_vector();
-                0.5 * ray_color(Ray::new(hit.p, target - hit.p), world, depth - 1)
-            }
+            Some(hit) => match hit.material.scatter(r, &hit) {
+                Some((scattered, attenuation)) => {
+                    attenuation * ray_color(scattered, world, depth - 1)
+                }
+                None => Vec3::default(),
+            },
             None => {
                 let unit_direction = r.direction().norm();
                 let t = 0.5 * (unit_direction.y() + 1.);
@@ -91,9 +51,27 @@ fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
 
 fn get_background_image_data() -> Vec<u32> {
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5)));
-    world.add(Box::new(Sphere::new(Vec3::new(0., -100.5, -1.), 100.)));
 
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0., 0., -1.),
+        0.5,
+        Arc::new(Lambertian::new(Vec3::new(0.7, 0.3, 0.3))),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0., -100.5, -1.),
+        100.,
+        Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.))),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(1., 0., -1.),
+        0.5,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3)),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(-1., 0., -1.),
+        0.5,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.8)),
+    )));
     let cam = Camera::new();
 
     let mut buffer: Vec<u32> = Vec::with_capacity(IMAGE_HEIGHT * IMAGE_WIDTH);

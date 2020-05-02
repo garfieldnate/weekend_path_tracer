@@ -1,6 +1,4 @@
 use crate::utils::{clamp, random_in_01, random_in_range};
-use rand::distributions::OpenClosed01;
-use rand::{thread_rng, Rng};
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
@@ -116,6 +114,18 @@ impl Neg for Vec3 {
             x: -self.x,
             y: -self.y,
             z: -self.z,
+        }
+    }
+}
+
+// Hadamard product is used for mixing two colors together
+impl Mul for Vec3 {
+    type Output = Vec3;
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
         }
     }
 }

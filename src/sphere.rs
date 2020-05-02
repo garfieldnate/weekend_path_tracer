@@ -1,17 +1,24 @@
 use crate::{
     hittable::{HitRecord, Hittable},
+    material::Material,
     ray::Ray,
     vec3::Vec3,
 };
-#[derive(Copy, Clone, Debug, PartialEq, Default)]
+use std::sync::Arc;
+#[derive(Clone, Debug)]
 pub struct Sphere {
     center: Vec3,
     radius: f64,
+    material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Vec3, radius: f64, material: Arc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -34,6 +41,7 @@ impl Hittable for Sphere {
                     p,
                     (p - self.center) / self.radius,
                     r,
+                    self.material.clone(),
                 ))
             } else {
                 let root_2 = (-half_b + disc_sqrt) / a;
@@ -44,6 +52,7 @@ impl Hittable for Sphere {
                         p,
                         (p - self.center) / self.radius,
                         r,
+                        self.material.clone(),
                     ))
                 } else {
                     None

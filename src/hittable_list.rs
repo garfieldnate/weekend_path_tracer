@@ -31,8 +31,8 @@ impl HittableList {
         for o in &self.objects {
             match o.hit(r, t_min, closest_distance_so_far) {
                 Some(hit) => {
-                    closest_hit_so_far = Some(hit);
                     closest_distance_so_far = hit.t;
+                    closest_hit_so_far = Some(hit);
                 }
                 None => {}
             }
