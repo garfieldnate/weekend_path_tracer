@@ -1,6 +1,7 @@
 pub mod camera;
 pub mod canvas;
 pub mod consts;
+pub mod dielectric;
 pub mod diffuse;
 pub mod hittable;
 pub mod hittable_list;

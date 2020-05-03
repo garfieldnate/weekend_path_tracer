@@ -3,6 +3,7 @@ use weekend_path_tracer::{
     camera::Camera,
     canvas::Canvas,
     consts::{sky_blue, white},
+    dielectric::Dielectric,
     diffuse::Lambertian,
     hittable_list::HittableList,
     metal::Metal,
@@ -55,7 +56,7 @@ fn get_background_image_data() -> Vec<u32> {
     world.add(Box::new(Sphere::new(
         Vec3::new(0., 0., -1.),
         0.5,
-        Arc::new(Lambertian::new(Vec3::new(0.7, 0.3, 0.3))),
+        Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
     )));
     world.add(Box::new(Sphere::new(
         Vec3::new(0., -100.5, -1.),
@@ -69,9 +70,15 @@ fn get_background_image_data() -> Vec<u32> {
     )));
     world.add(Box::new(Sphere::new(
         Vec3::new(-1., 0., -1.),
-        0.5,
-        Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.8)),
+        -0.45,
+        Arc::new(Dielectric::new(1.5)),
     )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(-1., 0., -1.),
+        0.5,
+        Arc::new(Dielectric::new(1.5)),
+    )));
+
     let cam = Camera::new();
 
     let mut buffer: Vec<u32> = Vec::with_capacity(IMAGE_HEIGHT * IMAGE_WIDTH);

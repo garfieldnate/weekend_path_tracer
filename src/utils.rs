@@ -29,3 +29,7 @@ pub fn random_in_unit_sphere() -> Vec3 {
         }
     }
 }
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    return v - 2. * v.dot(n) * n;
+}

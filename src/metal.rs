@@ -1,5 +1,9 @@
 use crate::{
-    hittable::HitRecord, material::Material, ray::Ray, utils::random_in_unit_sphere, vec3::Vec3,
+    hittable::HitRecord,
+    material::Material,
+    ray::Ray,
+    utils::{random_in_unit_sphere, reflect},
+    vec3::Vec3,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
@@ -24,8 +28,4 @@ impl Material for Metal {
             None
         }
     }
-}
-
-fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    return v - 2. * v.dot(n) * n;
 }
