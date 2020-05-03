@@ -82,12 +82,17 @@ fn get_background_image_data() -> Vec<u32> {
     let look_from = Vec3::new(3., 3., 2.);
     let look_at = Vec3::new(0., 0., -1.);
     let view_up = Vec3::new(0., 1., 0.);
+    let dist_to_focus = (look_from - look_at).magnitude();
+    let aperture = 2.;
+    let aspect_ratio = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
     let cam = Camera::new(
         look_from,
         look_at,
         view_up,
-        15.,
-        IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64,
+        20.,
+        aspect_ratio,
+        aperture,
+        dist_to_focus,
     );
 
     let mut buffer: Vec<u32> = Vec::with_capacity(IMAGE_HEIGHT * IMAGE_WIDTH);
