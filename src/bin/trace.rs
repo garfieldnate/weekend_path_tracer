@@ -79,7 +79,16 @@ fn get_background_image_data() -> Vec<u32> {
         Arc::new(Dielectric::new(1.5)),
     )));
 
-    let cam = Camera::new();
+    let look_from = Vec3::new(3., 3., 2.);
+    let look_at = Vec3::new(0., 0., -1.);
+    let view_up = Vec3::new(0., 1., 0.);
+    let cam = Camera::new(
+        look_from,
+        look_at,
+        view_up,
+        15.,
+        IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64,
+    );
 
     let mut buffer: Vec<u32> = Vec::with_capacity(IMAGE_HEIGHT * IMAGE_WIDTH);
     for j in (0..IMAGE_HEIGHT).rev() {
