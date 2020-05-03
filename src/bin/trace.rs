@@ -6,15 +6,17 @@ use weekend_path_tracer::{
     dielectric::Dielectric,
     diffuse::Lambertian,
     hittable_list::HittableList,
+    material::Material,
     metal::Metal,
     ray::Ray,
     sphere::Sphere,
-    utils::random_in_01,
+    utils::{random_in_01, random_in_range},
     vec3::Vec3,
 };
 
 const IMAGE_WIDTH: usize = 200;
 const IMAGE_HEIGHT: usize = 100;
+const ASPECT_RATIO: f64 = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
 const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_DEPTH: u8 = 50;
 const EPSILON: f64 = 0.001;
@@ -50,7 +52,7 @@ fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
     }
 }
 
-fn get_background_image_data() -> Vec<u32> {
+fn test_scene() -> HittableList {
     let mut world = HittableList::new();
 
     world.add(Box::new(Sphere::new(
@@ -78,19 +80,94 @@ fn get_background_image_data() -> Vec<u32> {
         -0.45,
         Arc::new(Dielectric::new(1.5)),
     )));
+    world
+}
 
-    let look_from = Vec3::new(3., 3., 2.);
-    let look_at = Vec3::new(0., 0., -1.);
-    let view_up = Vec3::new(0., 1., 0.);
-    let dist_to_focus = (look_from - look_at).magnitude();
-    let aperture = 2.;
-    let aspect_ratio = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
+fn random_scene() -> HittableList {
+    let mut world = HittableList::new();
+
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0., -1000., 0.),
+        1000.,
+        Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+    )));
+
+    let glass = Arc::new(Dielectric::new(1.5));
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = random_in_01();
+            let center = Vec3::new(
+                a as f64 + 0.9 * random_in_01(),
+                0.2,
+                b as f64 + 0.9 * random_in_01(),
+            );
+            if (center - Vec3::new(4., 0.2, 0.)).magnitude() > 0.9 {
+                let material: Arc<dyn Material> = if choose_mat < 0.8 {
+                    // diffuse
+                    let albedo = Vec3::random() * Vec3::random();
+                    Arc::new(Lambertian::new(albedo))
+                } else if choose_mat < 0.95 {
+                    // metal
+                    let albedo = Vec3::random_in_range(0.5, 1.);
+                    let fuzz = random_in_range(0., 0.5);
+                    Arc::new(Metal::new(albedo, fuzz))
+                } else {
+                    // glass
+                    glass.clone()
+                };
+                world.add(Box::new(Sphere::new(center, 0.2, material)));
+            }
+        }
+    }
+
+    world.add(Box::new(Sphere::new(Vec3::new(0., 1., 0.), 1.0, glass)));
+
+    world.add(Box::new(Sphere::new(
+        Vec3::new(-4., 1., 0.),
+        1.0,
+        Arc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Vec3::new(4., 1., 0.),
+        1.0,
+        Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.)),
+    )));
+
+    world
+}
+
+fn get_background_image_data() -> Vec<u32> {
+    // let world = test_scene();
+    // let look_from = Vec3::new(3., 3., 2.);
+    // let look_at = Vec3::new(0., 0., -1.);
+    // let view_up = Vec3::new(0., 1., 0.);
+    // let dist_to_focus = (look_from - look_at).magnitude();
+    // let aperture = 2.;
+    // let cam = Camera::new(
+    //     look_from,
+    //     look_at,
+    //     view_up,
+    //     20.,
+    //     ASPECT_RATIO,
+    //     aperture,
+    //     dist_to_focus,
+    // );
+
+    let world = random_scene();
+
+    let lookfrom = Vec3::new(13., 2., 3.);
+    let lookat = Vec3::new(0., 0., 0.);
+    let vup = Vec3::new(0., 1., 0.);
+    let dist_to_focus = 10.;
+    let aperture = 0.1;
+
     let cam = Camera::new(
-        look_from,
-        look_at,
-        view_up,
+        lookfrom,
+        lookat,
+        vup,
         20.,
-        aspect_ratio,
+        ASPECT_RATIO,
         aperture,
         dist_to_focus,
     );
