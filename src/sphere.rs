@@ -33,30 +33,31 @@ impl Hittable for Sphere {
             None
         } else {
             let disc_sqrt = discriminant.sqrt();
-            let root_1 = (-half_b - disc_sqrt) / a;
-            if root_1 > t_min && root_1 < t_max {
-                let p = r.at(root_1);
+            {
+                let root_1 = (-half_b - disc_sqrt) / a;
+                if root_1 > t_min && root_1 < t_max {
+                    let p = r.at(root_1);
+                    return Some(HitRecord::new(
+                        root_1,
+                        p,
+                        (p - self.center) / self.radius,
+                        r,
+                        self.material.clone(),
+                    ));
+                }
+            }
+            let root_2 = (-half_b + disc_sqrt) / a;
+            if root_2 > t_min && root_2 < t_max {
+                let p = r.at(root_2);
                 Some(HitRecord::new(
-                    root_1,
+                    root_2,
                     p,
                     (p - self.center) / self.radius,
                     r,
                     self.material.clone(),
                 ))
             } else {
-                let root_2 = (-half_b + disc_sqrt) / a;
-                if root_2 > t_min && root_2 < t_max {
-                    let p = r.at(root_2);
-                    Some(HitRecord::new(
-                        root_1,
-                        p,
-                        (p - self.center) / self.radius,
-                        r,
-                        self.material.clone(),
-                    ))
-                } else {
-                    None
-                }
+                None
             }
         }
     }

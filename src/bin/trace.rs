@@ -70,12 +70,12 @@ fn get_background_image_data() -> Vec<u32> {
     )));
     world.add(Box::new(Sphere::new(
         Vec3::new(-1., 0., -1.),
-        -0.45,
+        0.5,
         Arc::new(Dielectric::new(1.5)),
     )));
     world.add(Box::new(Sphere::new(
         Vec3::new(-1., 0., -1.),
-        0.5,
+        -0.45,
         Arc::new(Dielectric::new(1.5)),
     )));
 
