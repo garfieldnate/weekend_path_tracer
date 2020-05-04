@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::sync::Arc;
 use weekend_path_tracer::{
     camera::Camera,
@@ -21,7 +22,7 @@ const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_DEPTH: u8 = 50;
 const EPSILON: f64 = 0.001;
 
-fn vec_to_u8(color: Vec3) -> u32 {
+fn vec_to_u32(color: Vec3) -> u32 {
     let (r, g, b) = color.to_rgb();
     ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
 }
@@ -172,22 +173,26 @@ fn get_background_image_data() -> Vec<u32> {
         dist_to_focus,
     );
 
-    let mut buffer: Vec<u32> = Vec::with_capacity(IMAGE_HEIGHT * IMAGE_WIDTH);
-    for j in (0..IMAGE_HEIGHT).rev() {
-        println!("Scanlines remaining: {}", j);
-        for i in 0..IMAGE_WIDTH {
-            let mut color = Vec3::default();
-            for _s in 0..SAMPLES_PER_PIXEL {
-                let u: f64 = (i as f64 + random_in_01()) / IMAGE_WIDTH as f64;
-                let v: f64 = (j as f64 + random_in_01()) / IMAGE_HEIGHT as f64;
-                let r = cam.get_ray(u, v);
-                color += ray_color(r, &world, MAX_DEPTH);
-            }
-            color /= SAMPLES_PER_PIXEL as f64;
+    let mut buffer: Vec<u32> = vec![0; IMAGE_HEIGHT * IMAGE_WIDTH];
+    buffer
+        .par_chunks_mut(IMAGE_WIDTH)
+        .rev()
+        .enumerate()
+        .for_each(|(col_index, row)| {
+            println!("Scanlines remaining: {}", col_index);
+            for (row_index, pixel) in row.iter_mut().enumerate() {
+                let mut color = Vec3::default();
+                for _s in 0..SAMPLES_PER_PIXEL {
+                    let u: f64 = (row_index as f64 + random_in_01()) / IMAGE_WIDTH as f64;
+                    let v: f64 = (col_index as f64 + random_in_01()) / IMAGE_HEIGHT as f64;
+                    let r = cam.get_ray(u, v);
+                    color += ray_color(r, &world, MAX_DEPTH);
+                }
+                color /= SAMPLES_PER_PIXEL as f64;
 
-            buffer.push(vec_to_u8(color));
-        }
-    }
+                *pixel = vec_to_u32(color);
+            }
+        });
     buffer
 }
 
