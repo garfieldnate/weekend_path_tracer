@@ -1,5 +1,5 @@
 use indicatif::ParallelProgressIterator;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::ParallelIterator;
 use rayon::prelude::*;
 use std::sync::Arc;
 use weekend_path_tracer::{
@@ -9,8 +9,8 @@ use weekend_path_tracer::{
     dielectric::Dielectric,
     diffuse::Lambertian,
     hittable_list::HittableList,
-    material::Material,
     metal::Metal,
+    moving_sphere::MovingSphere,
     ray::Ray,
     sphere::Sphere,
     utils::{random_in_01, random_in_range},
@@ -86,7 +86,8 @@ fn test_scene() -> HittableList {
     world
 }
 
-fn random_scene() -> HittableList {
+// bouncy: make the diffuse spheres appear to be bouncing up and down
+fn random_scene(bouncy: bool) -> HittableList {
     let mut world = HittableList::new();
 
     world.add(Box::new(Sphere::new(
@@ -105,20 +106,33 @@ fn random_scene() -> HittableList {
                 b as f64 + 0.9 * random_in_01(),
             );
             if (center - Vec3::new(4., 0.2, 0.)).magnitude() > 0.9 {
-                let material: Arc<dyn Material> = if choose_mat < 0.8 {
+                if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Vec3::random() * Vec3::random();
-                    Arc::new(Lambertian::new(albedo))
+                    let material = Arc::new(Lambertian::new(albedo));
+                    if bouncy {
+                        world.add(Box::new(MovingSphere::new(
+                            center,
+                            center + Vec3::new(0., random_in_range(0., 0.5), 0.),
+                            0.,
+                            1.,
+                            0.2,
+                            material,
+                        )));
+                    } else {
+                        world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    }
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = Vec3::random_in_range(0.5, 1.);
                     let fuzz = random_in_range(0., 0.5);
-                    Arc::new(Metal::new(albedo, fuzz))
+                    let material = Arc::new(Metal::new(albedo, fuzz));
+                    world.add(Box::new(Sphere::new(center, 0.2, material)));
                 } else {
                     // glass
-                    glass.clone()
-                };
-                world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    let material = glass.clone();
+                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                }
             }
         }
     }
@@ -157,7 +171,7 @@ fn get_background_image_data() -> Vec<u32> {
     //     dist_to_focus,
     // );
 
-    let world = random_scene();
+    let world = random_scene(true);
 
     let lookfrom = Vec3::new(13., 2., 3.);
     let lookat = Vec3::new(0., 0., 0.);
@@ -173,6 +187,8 @@ fn get_background_image_data() -> Vec<u32> {
         ASPECT_RATIO,
         aperture,
         dist_to_focus,
+        0.,
+        1.,
     );
 
     let mut buffer: Vec<u32> = vec![0; IMAGE_HEIGHT * IMAGE_WIDTH];

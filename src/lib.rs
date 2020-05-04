@@ -7,6 +7,7 @@ pub mod hittable;
 pub mod hittable_list;
 pub mod material;
 pub mod metal;
+pub mod moving_sphere;
 pub mod ray;
 pub mod sphere;
 pub mod utils;

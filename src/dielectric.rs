@@ -35,11 +35,11 @@ impl Material for Dielectric {
             || random_in_01() < reflection_probability(cos_theta, eta_i_over_eta_t);
         if ray_reflects {
             let reflected = reflect(unit_direction, hit.normal);
-            let scattered = Ray::new(hit.p, reflected);
+            let scattered = Ray::new(hit.p, reflected, r_in.time());
             Some((scattered, const_attenuation()))
         } else {
             let refracted = refract(unit_direction, hit.normal, eta_i_over_eta_t);
-            let scattered = Ray::new(hit.p, refracted);
+            let scattered = Ray::new(hit.p, refracted, r_in.time());
             Some((scattered, const_attenuation()))
         }
     }

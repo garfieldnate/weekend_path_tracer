@@ -1,4 +1,8 @@
-use crate::{ray::Ray, utils::random_in_unit_disk, vec3::Vec3};
+use crate::{
+    ray::Ray,
+    utils::{random_in_range, random_in_unit_disk},
+    vec3::Vec3,
+};
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Camera {
@@ -10,6 +14,8 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f64,
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
@@ -22,6 +28,8 @@ impl Camera {
         aspect: f64,
         aperture: f64,
         focus_dist: f64,
+        time0: f64,
+        time1: f64,
     ) -> Self {
         let origin = look_from;
         let lens_radius = aperture / 2.;
@@ -48,6 +56,8 @@ impl Camera {
             v,
             w,
             lens_radius,
+            time0,
+            time1,
         }
     }
 
@@ -58,6 +68,7 @@ impl Camera {
         return Ray::new(
             self.origin + offset,
             self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
+            random_in_range(self.time0, self.time1),
         );
     }
 }

@@ -18,10 +18,10 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _r_in: Ray, hit: &HitRecord) -> Option<(Ray, Vec3)> {
+    fn scatter(&self, r_in: Ray, hit: &HitRecord) -> Option<(Ray, Vec3)> {
         let scatter_direction = hit.normal + random_unit_vector();
         // Note: could also only scatter with some probability p and set attenuation to self.albedo/p.
-        let scattered = Ray::new(hit.p, scatter_direction);
+        let scattered = Ray::new(hit.p, scatter_direction, r_in.time());
         let attenuation = self.albedo;
         Some((scattered, attenuation))
     }
