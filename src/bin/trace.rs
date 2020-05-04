@@ -1,3 +1,5 @@
+use indicatif::ParallelProgressIterator;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::prelude::*;
 use std::sync::Arc;
 use weekend_path_tracer::{
@@ -178,8 +180,9 @@ fn get_background_image_data() -> Vec<u32> {
         .par_chunks_mut(IMAGE_WIDTH)
         .rev()
         .enumerate()
+        .progress()
         .for_each(|(col_index, row)| {
-            println!("Scanlines remaining: {}", col_index);
+            // println!("Scanlines remaining: {}", col_index);
             for (row_index, pixel) in row.iter_mut().enumerate() {
                 let mut color = Vec3::default();
                 for _s in 0..SAMPLES_PER_PIXEL {

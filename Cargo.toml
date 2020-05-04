@@ -11,3 +11,4 @@ minifb = "0.16.0"
 rand = "0.7"
 dyn-clone = "1.0.1"
 rayon = "1.1"
+indicatif = {version = "*", features = ["with_rayon"]}
