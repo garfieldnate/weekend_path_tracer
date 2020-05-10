@@ -1,73 +1,71 @@
 use crate::utils::{clamp, random_in_01, random_in_range};
 use std::fmt::Display;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub};
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
+    data: [f64; 3],
 }
 
 const COLOR_MAX: f64 = 256.;
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Self { x, y, z }
+        Self { data: [x, y, z] }
     }
     pub fn random() -> Self {
         Self {
-            x: random_in_01(),
-            y: random_in_01(),
-            z: random_in_01(),
+            data: [random_in_01(), random_in_01(), random_in_01()],
         }
     }
     pub fn random_in_range(min: f64, max: f64) -> Self {
         Self {
-            x: random_in_range(min, max),
-            y: random_in_range(min, max),
-            z: random_in_range(min, max),
+            data: [
+                random_in_range(min, max),
+                random_in_range(min, max),
+                random_in_range(min, max),
+            ],
         }
     }
     pub fn x(&self) -> f64 {
-        self.x
+        self.data[0]
     }
     pub fn y(&self) -> f64 {
-        self.y
+        self.data[1]
     }
     pub fn z(&self) -> f64 {
-        self.z
+        self.data[2]
     }
     pub fn length_squared(&self) -> f64 {
-        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
+        self.x().powi(2) + self.y().powi(2) + self.z().powi(2)
     }
     pub fn magnitude(&self) -> f64 {
         self.length_squared().sqrt()
     }
     pub fn norm(&self) -> Vec3 {
         let magnitude = self.magnitude();
-        Vec3 {
-            x: self.x / magnitude,
-            y: self.y / magnitude,
-            z: self.z / magnitude,
-        }
+        Self::new(
+            self.x() / magnitude,
+            self.y() / magnitude,
+            self.z() / magnitude,
+        )
     }
     pub fn dot(&self, other: Vec3) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z
+        self.x() * other.x() + self.y() * other.y() + self.z() * other.z()
     }
     pub fn cross(&self, other: Vec3) -> Vec3 {
-        Vec3 {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x,
-        }
+        Self::new(
+            self.y() * other.z() - self.z() * other.y(),
+            self.z() * other.x() - self.x() * other.z(),
+            self.x() * other.y() - self.y() * other.x(),
+        )
     }
     // assumes that x,y,z are in [0,1], outputs (r,g,b)
     pub fn to_rgb(&self) -> (u8, u8, u8) {
         // apply gamma correction (gamma 2, or raised to the 1/2 power)
-        let r = self.x.sqrt();
-        let g = self.y.sqrt();
-        let b = self.z.sqrt();
+        let r = self.x().sqrt();
+        let g = self.y().sqrt();
+        let b = self.z().sqrt();
         (
             (COLOR_MAX * clamp(r, 0., 0.999)) as u8,
             (COLOR_MAX * clamp(g, 0., 0.999)) as u8,
@@ -78,7 +76,7 @@ impl Vec3 {
 
 impl Display for Vec3 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "vector({}, {}, {})", self.x, self.y, self.z)?;
+        write!(f, "vector({}, {}, {})", self.x(), self.y(), self.z())?;
         Ok(())
     }
 }
@@ -86,35 +84,39 @@ impl Display for Vec3 {
 impl Add for Vec3 {
     type Output = Vec3;
     fn add(self, other: Vec3) -> Vec3 {
-        Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
+        Self::new(
+            self.x() + other.x(),
+            self.y() + other.y(),
+            self.z() + other.z(),
+        )
     }
 }
 
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, other: Vec3) {
-        *self = Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        };
+        *self = Self::new(
+            self.x() + other.x(),
+            self.y() + other.y(),
+            self.z() + other.z(),
+        );
     }
 }
 
 impl Sub for Vec3 {
     type Output = Vec3;
     fn sub(self, other: Vec3) -> Vec3 {
-        Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
+        Self::new(
+            self.x() - other.x(),
+            self.y() - other.y(),
+            self.z() - other.z(),
+        )
     }
 }
 
 impl Neg for Vec3 {
     type Output = Vec3;
     fn neg(self) -> Vec3 {
-        Vec3 {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
-        }
+        Self::new(-self.x(), -self.y(), -self.z())
     }
 }
 
@@ -122,22 +124,18 @@ impl Neg for Vec3 {
 impl Mul for Vec3 {
     type Output = Vec3;
     fn mul(self, other: Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x * other.x,
-            y: self.y * other.y,
-            z: self.z * other.z,
-        }
+        Self::new(
+            self.x() * other.x(),
+            self.y() * other.y(),
+            self.z() * other.z(),
+        )
     }
 }
 
 impl Mul<f64> for Vec3 {
     type Output = Vec3;
     fn mul(self, scalar: f64) -> Vec3 {
-        Vec3 {
-            x: self.x * scalar,
-            y: self.y * scalar,
-            z: self.z * scalar,
-        }
+        Self::new(self.x() * scalar, self.y() * scalar, self.z() * scalar)
     }
 }
 
@@ -150,11 +148,7 @@ impl Mul<Vec3> for f64 {
 
 impl MulAssign<f64> for Vec3 {
     fn mul_assign(&mut self, scalar: f64) {
-        *self = Self {
-            x: self.x * scalar,
-            y: self.y * scalar,
-            z: self.z * scalar,
-        };
+        *self = Self::new(self.x() * scalar, self.y() * scalar, self.z() * scalar);
     }
 }
 
@@ -169,10 +163,18 @@ impl Div<f64> for Vec3 {
 impl DivAssign<f64> for Vec3 {
     fn div_assign(&mut self, scalar: f64) {
         let inv_scalar = 1. / scalar;
-        *self = Self {
-            x: self.x * inv_scalar,
-            y: self.y * inv_scalar,
-            z: self.z * inv_scalar,
-        };
+        *self = Self::new(
+            self.x() * inv_scalar,
+            self.y() * inv_scalar,
+            self.z() * inv_scalar,
+        );
+    }
+}
+
+impl Index<usize> for Vec3 {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
     }
 }
