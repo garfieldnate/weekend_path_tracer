@@ -1,4 +1,5 @@
 use crate::{
+    aabb::AABB,
     hittable::{HitRecord, Hittable},
     material::Material,
     ray::Ray,
@@ -78,5 +79,19 @@ impl Hittable for MovingSphere {
                 None
             }
         }
+    }
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB> {
+        // TODO: don't we always compute bounding boxes when we have a ray to intersect?
+        // So why couldn't we use the ray's time variable to reduce the size of the bounding box?
+
+        let box0 = AABB::new(
+            self.center(t0) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(t0) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        let box1 = AABB::new(
+            self.center(t1) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(t1) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        Some(box0.combine(box1))
     }
 }

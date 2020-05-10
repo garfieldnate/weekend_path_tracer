@@ -1,3 +1,4 @@
+pub mod aabb;
 pub mod camera;
 pub mod canvas;
 pub mod consts;

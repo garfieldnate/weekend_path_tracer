@@ -1,4 +1,5 @@
 use crate::{
+    aabb::AABB,
     hittable::{HitRecord, Hittable},
     ray::Ray,
 };
@@ -39,5 +40,17 @@ impl HittableList {
         }
 
         closest_hit_so_far
+    }
+    pub fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB> {
+        if self.objects.is_empty() {
+            return None;
+        }
+        // TODO: use the reduce crate to simplify this
+        let mut iter = self.objects.iter().flat_map(|o| o.bounding_box(t0, t1));
+        let first = iter.nth(0);
+        match first {
+            None => None,
+            Some(first_box) => Some(iter.fold(first_box, |acc, b| acc.combine(b))),
+        }
     }
 }

@@ -1,5 +1,5 @@
 use crate::ray::Ray;
-use crate::{material::Material, vec3::Vec3};
+use crate::{aabb::AABB, material::Material, vec3::Vec3};
 use dyn_clone::DynClone;
 use std::{fmt::Debug, sync::Arc};
 
@@ -32,4 +32,5 @@ impl HitRecord {
 
 pub trait Hittable: Debug + DynClone + Sync {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB>;
 }
