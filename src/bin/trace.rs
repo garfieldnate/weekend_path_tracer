@@ -58,27 +58,27 @@ fn ray_color(r: Ray, world: &HittableList, depth: u8) -> Vec3 {
 fn test_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(0., 0., -1.),
         0.5,
         Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(0., -100.5, -1.),
         100.,
         Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.))),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(1., 0., -1.),
         0.5,
         Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 0.3)),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(-1., 0., -1.),
         0.5,
         Arc::new(Dielectric::new(1.5)),
     )));
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(-1., 0., -1.),
         -0.45,
         Arc::new(Dielectric::new(1.5)),
@@ -90,7 +90,7 @@ fn test_scene() -> HittableList {
 fn random_scene(bouncy: bool) -> HittableList {
     let mut world = HittableList::new();
 
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(0., -1000., 0.),
         1000.,
         Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
@@ -111,7 +111,7 @@ fn random_scene(bouncy: bool) -> HittableList {
                     let albedo = Vec3::random() * Vec3::random();
                     let material = Arc::new(Lambertian::new(albedo));
                     if bouncy {
-                        world.add(Box::new(MovingSphere::new(
+                        world.add(Arc::new(MovingSphere::new(
                             center,
                             center + Vec3::new(0., random_in_range(0., 0.5), 0.),
                             0.,
@@ -120,32 +120,32 @@ fn random_scene(bouncy: bool) -> HittableList {
                             material,
                         )));
                     } else {
-                        world.add(Box::new(Sphere::new(center, 0.2, material)));
+                        world.add(Arc::new(Sphere::new(center, 0.2, material)));
                     }
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = Vec3::random_in_range(0.5, 1.);
                     let fuzz = random_in_range(0., 0.5);
                     let material = Arc::new(Metal::new(albedo, fuzz));
-                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    world.add(Arc::new(Sphere::new(center, 0.2, material)));
                 } else {
                     // glass
                     let material = glass.clone();
-                    world.add(Box::new(Sphere::new(center, 0.2, material)));
+                    world.add(Arc::new(Sphere::new(center, 0.2, material)));
                 }
             }
         }
     }
 
-    world.add(Box::new(Sphere::new(Vec3::new(0., 1., 0.), 1.0, glass)));
+    world.add(Arc::new(Sphere::new(Vec3::new(0., 1., 0.), 1.0, glass)));
 
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(-4., 1., 0.),
         1.0,
         Arc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
     )));
 
-    world.add(Box::new(Sphere::new(
+    world.add(Arc::new(Sphere::new(
         Vec3::new(4., 1., 0.),
         1.0,
         Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.)),

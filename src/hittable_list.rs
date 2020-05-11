@@ -3,16 +3,18 @@ use crate::{
     hittable::{HitRecord, Hittable},
     ray::Ray,
 };
+use std::sync::Arc;
 
 #[derive(Default)]
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    // TODO: encapsulate? Needed by BvhNode
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
 impl HittableList {
     pub fn new() -> Self {
         Self { objects: vec![] }
     }
-    pub fn with_object(object: Box<dyn Hittable>) -> Self {
+    pub fn with_object(object: Arc<dyn Hittable>) -> Self {
         let mut _self = Self::new();
         _self.add(object);
         _self
@@ -21,7 +23,7 @@ impl HittableList {
     pub fn clear(&mut self) {
         self.objects.clear();
     }
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
 

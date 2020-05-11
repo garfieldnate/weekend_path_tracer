@@ -11,6 +11,10 @@ pub fn random_in_range(min: f64, max: f64) -> f64 {
     thread_rng().gen_range(min, max)
 }
 
+pub fn random_int_in_range(min: i32, max: i32) -> i32 {
+    thread_rng().gen_range(min, max)
+}
+
 pub fn clamp(n: f64, min: f64, max: f64) -> f64 {
     n.max(min).min(max)
 }

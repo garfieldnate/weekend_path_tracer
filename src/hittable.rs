@@ -3,7 +3,7 @@ use crate::{aabb::AABB, material::Material, vec3::Vec3};
 use dyn_clone::DynClone;
 use std::{fmt::Debug, sync::Arc};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct HitRecord {
     pub t: f64,
     pub p: Vec3,
@@ -30,7 +30,8 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Debug + DynClone + Sync {
+// TODO: don't know why, but putting a dyn Hittable in an Arc requires that Hittable implements Send
+pub trait Hittable: Debug + DynClone + Sync + Send {
     fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB>;
 }

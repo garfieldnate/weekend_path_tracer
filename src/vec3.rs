@@ -4,7 +4,8 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub};
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Vec3 {
-    data: [f64; 3],
+    // TODO: this really shouldn't be public
+    pub data: [f64; 3],
 }
 
 const COLOR_MAX: f64 = 256.;
