@@ -2,17 +2,19 @@ use crate::{
     hittable::HitRecord,
     material::Material,
     ray::Ray,
+    texture::Texture,
     utils::{random_in_range, random_in_unit_sphere},
     vec3::Vec3,
 };
+use std::sync::Arc;
 
-#[derive(Clone, Copy, Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct Lambertian {
-    albedo: Vec3,
+    albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
 }
