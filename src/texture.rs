@@ -2,7 +2,7 @@ use crate::vec3::Vec3;
 use std::fmt::Debug;
 
 pub trait Texture: Sync + Send + Debug {
-    fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3;
+    fn value(&self, u: f64, v: f64, p: Vec3) -> Vec3;
 }
 
 #[derive(Clone, Copy, PartialEq, Default, Debug)]
@@ -11,7 +11,7 @@ pub struct SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _p: &Vec3) -> Vec3 {
+    fn value(&self, _u: f64, _v: f64, _p: Vec3) -> Vec3 {
         self.color
     }
 }

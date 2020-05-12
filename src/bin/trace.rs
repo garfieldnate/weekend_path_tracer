@@ -13,6 +13,7 @@ use weekend_path_tracer::{
     moving_sphere::MovingSphere,
     ray::Ray,
     sphere::Sphere,
+    texture::SolidColor,
     utils::{random_in_01, random_in_range},
     vec3::Vec3,
 };
@@ -61,12 +62,16 @@ fn test_scene() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Vec3::new(0., 0., -1.),
         0.5,
-        Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
+        Arc::new(Lambertian::new(Arc::new(SolidColor::new(Vec3::new(
+            0.1, 0.2, 0.5,
+        ))))),
     )));
     world.add(Arc::new(Sphere::new(
         Vec3::new(0., -100.5, -1.),
         100.,
-        Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.))),
+        Arc::new(Lambertian::new(Arc::new(SolidColor::new(Vec3::new(
+            0.8, 0.8, 0.,
+        ))))),
     )));
     world.add(Arc::new(Sphere::new(
         Vec3::new(1., 0., -1.),
@@ -93,7 +98,9 @@ fn random_scene(bouncy: bool) -> HittableList {
     world.add(Arc::new(Sphere::new(
         Vec3::new(0., -1000., 0.),
         1000.,
-        Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+        Arc::new(Lambertian::new(Arc::new(SolidColor::new(Vec3::new(
+            0.5, 0.5, 0.5,
+        ))))),
     )));
 
     let glass = Arc::new(Dielectric::new(1.5));
@@ -109,7 +116,7 @@ fn random_scene(bouncy: bool) -> HittableList {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Vec3::random() * Vec3::random();
-                    let material = Arc::new(Lambertian::new(albedo));
+                    let material = Arc::new(Lambertian::new(Arc::new(SolidColor::new(albedo))));
                     if bouncy {
                         world.add(Arc::new(MovingSphere::new(
                             center,
@@ -142,7 +149,9 @@ fn random_scene(bouncy: bool) -> HittableList {
     world.add(Arc::new(Sphere::new(
         Vec3::new(-4., 1., 0.),
         1.0,
-        Arc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
+        Arc::new(Lambertian::new(Arc::new(SolidColor::new(Vec3::new(
+            0.4, 0.2, 0.1,
+        ))))),
     )));
 
     world.add(Arc::new(Sphere::new(

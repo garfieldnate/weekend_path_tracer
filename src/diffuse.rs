@@ -8,7 +8,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq, Default)]
+#[derive(Clone, Debug)]
 pub struct Lambertian {
     albedo: Arc<dyn Texture>,
 }
@@ -24,7 +24,7 @@ impl Material for Lambertian {
         let scatter_direction = hit.normal + random_unit_vector();
         // Note: could also only scatter with some probability p and set attenuation to self.albedo/p.
         let scattered = Ray::new(hit.p, scatter_direction, r_in.time());
-        let attenuation = self.albedo;
+        let attenuation = self.albedo.value(hit.u, hit.v, hit.p);
         Some((scattered, attenuation))
     }
 }

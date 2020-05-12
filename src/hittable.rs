@@ -26,6 +26,9 @@ impl HitRecord {
             t,
             p,
             normal,
+            // TODO: use real values here
+            u: 0.,
+            v: 0.,
             front_face,
             material,
         }
