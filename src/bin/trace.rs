@@ -13,7 +13,7 @@ use weekend_path_tracer::{
     moving_sphere::MovingSphere,
     ray::Ray,
     sphere::Sphere,
-    texture::SolidColor,
+    texture::{CheckerTexture, SolidColor},
     utils::{random_in_01, random_in_range},
     vec3::Vec3,
 };
@@ -93,14 +93,17 @@ fn test_scene() -> HittableList {
 
 // bouncy: make the diffuse spheres appear to be bouncing up and down
 fn random_scene(bouncy: bool) -> HittableList {
+    let checker = Arc::new(CheckerTexture::new(
+        Arc::new(SolidColor::new(Vec3::new(0.2, 0.3, 0.1))),
+        Arc::new(SolidColor::new(Vec3::new(0.9, 0.9, 0.9))),
+    ));
+
     let mut world = HittableList::new();
 
     world.add(Arc::new(Sphere::new(
         Vec3::new(0., -1000., 0.),
         1000.,
-        Arc::new(Lambertian::new(Arc::new(SolidColor::new(Vec3::new(
-            0.5, 0.5, 0.5,
-        ))))),
+        Arc::new(Lambertian::new(checker)),
     )));
 
     let glass = Arc::new(Dielectric::new(1.5));
@@ -180,7 +183,7 @@ fn get_background_image_data() -> Vec<u32> {
     //     dist_to_focus,
     // );
 
-    let world = random_scene(true);
+    let world = random_scene(false);
 
     let lookfrom = Vec3::new(13., 2., 3.);
     let lookat = Vec3::new(0., 0., 0.);
