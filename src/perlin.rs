@@ -1,12 +1,20 @@
 use crate::{utils::random_in_01, vec3::Vec3};
 use rand::{prelude::SliceRandom, thread_rng};
+use std::fmt::Debug;
 
+#[derive(Clone, Copy)]
 // TODO: really wish we could use a constant instead of a magic 256 everywhere
 pub struct Perlin {
     random_floats: [f64; 256],
     perm_x: [u8; 256],
     perm_y: [u8; 256],
     perm_z: [u8; 256],
+}
+
+impl Debug for Perlin {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Perlin")
+    }
 }
 
 impl Perlin {

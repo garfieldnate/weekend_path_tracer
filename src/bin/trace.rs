@@ -13,7 +13,7 @@ use weekend_path_tracer::{
     moving_sphere::MovingSphere,
     ray::Ray,
     sphere::Sphere,
-    texture::{CheckerTexture, SolidColor},
+    texture::{CheckerTexture, NoiseTexture, SolidColor},
     utils::{random_in_01, random_in_range},
     vec3::Vec3,
 };
@@ -166,6 +166,24 @@ fn random_scene(bouncy: bool) -> HittableList {
     world
 }
 
+fn two_perlin_spheres() -> HittableList {
+    let mut world = HittableList::new();
+
+    let perlin_texture = Arc::new(NoiseTexture::new());
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0., -1000., 0.),
+        1000.,
+        Arc::new(Lambertian::new(perlin_texture.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Vec3::new(0., 2., 0.),
+        2.,
+        Arc::new(Lambertian::new(perlin_texture.clone())),
+    )));
+
+    return world;
+}
+
 fn get_background_image_data() -> Vec<u32> {
     // let world = test_scene();
     // let look_from = Vec3::new(3., 3., 2.);
@@ -183,7 +201,8 @@ fn get_background_image_data() -> Vec<u32> {
     //     dist_to_focus,
     // );
 
-    let world = random_scene(false);
+    // let world = random_scene(false);
+    let world = two_perlin_spheres();
 
     let lookfrom = Vec3::new(13., 2., 3.);
     let lookat = Vec3::new(0., 0., 0.);
