@@ -68,6 +68,10 @@ impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Vec3) -> Vec3 {
         // Perlin output is negative, and gamma function takes sqrt() later, so make the result positive here
         // Vec3::new(1., 1., 1.) * 0.5 * (1. + self.perlin.noise(self.scale * p))
-        Vec3::new(1., 1., 1.) * 0.5 * (1. + self.perlin.turbulence(p, 7))
+        // Vec3::new(1., 1., 1.) * 0.5 * (1. + self.perlin.turbulence(p, 7))
+        Vec3::new(1., 1., 1.)
+            * 0.5
+            * (1. + (self.scale * p.z() + 10. * self.perlin.turbulence(p, 7)).sin())
+        // (1 + sin(scale*p.z() + 10*noise.turb(p)));
     }
 }
