@@ -45,9 +45,9 @@ impl Perlin {
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
-                    let component_i = (i + di) & 255;
-                    let component_j = (j + dj) & 255;
-                    let component_k = (k + dk) & 255;
+                    let component_i = self.perm_x[(i + di) & 255] as usize;
+                    let component_j = self.perm_y[(j + dj) & 255] as usize;
+                    let component_k = self.perm_z[(k + dk) & 255] as usize;
                     c[di][dj][dk] = self.random_floats[component_i ^ component_j ^ component_k];
                 }
             }
