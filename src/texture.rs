@@ -53,17 +53,19 @@ impl Texture for CheckerTexture {
 #[derive(Clone, Copy, Debug)]
 pub struct NoiseTexture {
     pub perlin: Perlin,
+    pub scale: f64,
 }
 impl NoiseTexture {
-    pub fn new() -> Self {
+    pub fn new(scale: f64) -> Self {
         Self {
             perlin: Perlin::new(),
+            scale,
         }
     }
 }
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Vec3) -> Vec3 {
-        Vec3::new(1., 1., 1.) * self.perlin.noise(p)
+        Vec3::new(1., 1., 1.) * self.perlin.noise(self.scale * p)
     }
 }

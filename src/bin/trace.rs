@@ -18,8 +18,8 @@ use weekend_path_tracer::{
     vec3::Vec3,
 };
 
-const IMAGE_WIDTH: usize = 200;
-const IMAGE_HEIGHT: usize = 100;
+const IMAGE_WIDTH: usize = 1000;
+const IMAGE_HEIGHT: usize = 500;
 const ASPECT_RATIO: f64 = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
 const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_DEPTH: u8 = 50;
@@ -169,7 +169,7 @@ fn random_scene(bouncy: bool) -> HittableList {
 fn two_perlin_spheres() -> HittableList {
     let mut world = HittableList::new();
 
-    let perlin_texture = Arc::new(NoiseTexture::new());
+    let perlin_texture = Arc::new(NoiseTexture::new(4.));
     world.add(Arc::new(Sphere::new(
         Vec3::new(0., -1000., 0.),
         1000.,

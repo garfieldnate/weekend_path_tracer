@@ -1,11 +1,11 @@
-use crate::{utils::random_in_01, vec3::Vec3};
+use crate::vec3::Vec3;
 use rand::{prelude::SliceRandom, thread_rng};
 use std::fmt::Debug;
 
 #[derive(Clone, Copy)]
 // TODO: really wish we could use a constant instead of a magic 256 everywhere
 pub struct Perlin {
-    random_floats: [f64; 256],
+    random_vectors: [Vec3; 256],
     perm_x: [u8; 256],
     perm_y: [u8; 256],
     perm_z: [u8; 256],
@@ -17,18 +17,42 @@ impl Debug for Perlin {
     }
 }
 
+struct ArrayPrinter {
+    data: [f64; 256],
+}
+
+impl Debug for ArrayPrinter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.data[..].fmt(f)
+    }
+}
+
 impl Perlin {
     pub fn new() -> Self {
-        let mut random_floats = [0.; 256];
-        for value in random_floats.iter_mut() {
-            *value = random_in_01();
+        let mut random_vectors = [Vec3::default(); 256];
+        for value in random_vectors.iter_mut() {
+            *value = Vec3::random_in_range(-1., 1.).norm();
         }
 
+        // eprintln!(
+        //     "{:?}",
+        //     ArrayPrinter {
+        //         data: random_vectors
+        //     }
+        // );
+
+        let perm_x = generate_permutation();
+        // eprintln!("perm_x: {:?}", ArrayPrinter { data: perm_x });
+        let perm_y = generate_permutation();
+        // eprintln!("perm_y: {:?}", ArrayPrinter { data: perm_y });
+        let perm_z = generate_permutation();
+        // eprintln!("perm_z: {:?}", ArrayPrinter { data: perm_z });
+
         Self {
-            random_floats,
-            perm_x: generate_permutation(),
-            perm_y: generate_permutation(),
-            perm_z: generate_permutation(),
+            random_vectors,
+            perm_x,
+            perm_y,
+            perm_z,
         }
     }
 
@@ -46,19 +70,20 @@ impl Perlin {
         let j = (4. * p.y()) as usize & 255;
         let k = (4. * p.z()) as usize & 255;
 
-        let mut c = [[[0.; 2]; 2]; 2];
+        let mut c = [[[Vec3::default(); 2]; 2]; 2];
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
                     let component_i = self.perm_x[(i + di) & 255] as usize;
                     let component_j = self.perm_y[(j + dj) & 255] as usize;
                     let component_k = self.perm_z[(k + dk) & 255] as usize;
-                    c[di][dj][dk] = self.random_floats[component_i ^ component_j ^ component_k];
+                    c[di][dj][dk] = self.random_vectors[component_i ^ component_j ^ component_k];
                 }
             }
         }
 
-        return trilinear_interpolation(c, u, v, w);
+        // return trilinear_interpolation(c, u, v, w);
+        return perlin_interpolation(c, u, v, w);
     }
 }
 
@@ -74,21 +99,44 @@ fn generate_permutation() -> [u8; 256] {
     p
 }
 
-fn trilinear_interpolation(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
-    let mut acc = 0.;
+fn perlin_interpolation(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    let uu = u * u * (3. - 2. * u);
+    let vv = v * v * (3. - 2. * v);
+    let ww = w * w * (3. - 2. * w);
+    let mut accum = 0.;
+
     for i in 0..2 {
         for j in 0..2 {
             for k in 0..2 {
                 let i_float = i as f64;
                 let j_float = j as f64;
                 let k_float = k as f64;
-                acc += (i_float * u + (1. - i_float) * (1. - u))
-                    * (j_float * v + (1. - j_float) * (1. - v))
-                    * (k_float * w + (1. - k_float) * (1. - w))
-                    * c[i][j][k];
+                let weight_v = Vec3::new(u - i_float, v - j_float, w - k_float);
+                accum += (i_float * uu + (1. - i_float) * (1. - uu))
+                    * (j_float * vv + (1. - j_float) * (1. - vv))
+                    * (k_float * ww + (1. - k_float) * (1. - ww))
+                    * c[i][j][k].dot(weight_v);
             }
         }
     }
-
-    return acc;
+    return accum;
 }
+
+// fn trilinear_interpolation(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+//     let mut acc = 0.;
+//     for i in 0..2 {
+//         for j in 0..2 {
+//             for k in 0..2 {
+//                 let i_float = i as f64;
+//                 let j_float = j as f64;
+//                 let k_float = k as f64;
+//                 acc += (i_float * u + (1. - i_float) * (1. - u))
+//                     * (j_float * v + (1. - j_float) * (1. - v))
+//                     * (k_float * w + (1. - k_float) * (1. - w))
+//                     * c[i][j][k];
+//             }
+//         }
+//     }
+
+//     return acc;
+// }
