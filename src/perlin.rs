@@ -37,6 +37,11 @@ impl Perlin {
         let v = p.y() - p.y().floor();
         let w = p.z() - p.z().floor();
 
+        // hermitic cubic to round off the interpolation
+        let u = u * u * (3. - 2. * u);
+        let v = v * v * (3. - 2. * v);
+        let w = w * w * (3. - 2. * w);
+
         let i = (4. * p.x()) as usize & 255;
         let j = (4. * p.y()) as usize & 255;
         let k = (4. * p.z()) as usize & 255;
