@@ -66,6 +66,7 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: Vec3) -> Vec3 {
-        Vec3::new(1., 1., 1.) * self.perlin.noise(self.scale * p)
+        // Perlin output is negative, and gamma function takes sqrt() later, so make the result positive here
+        Vec3::new(1., 1., 1.) * 0.5 * (1. + self.perlin.noise(self.scale * p))
     }
 }
