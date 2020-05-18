@@ -61,22 +61,17 @@ impl Perlin {
         let v = p.y() - p.y().floor();
         let w = p.z() - p.z().floor();
 
-        // hermitic cubic to round off the interpolation
-        let u = u * u * (3. - 2. * u);
-        let v = v * v * (3. - 2. * v);
-        let w = w * w * (3. - 2. * w);
-
-        let i = (4. * p.x()) as usize & 255;
-        let j = (4. * p.y()) as usize & 255;
-        let k = (4. * p.z()) as usize & 255;
+        let i = p.x().floor();
+        let j = p.y().floor();
+        let k = p.z().floor();
 
         let mut c = [[[Vec3::default(); 2]; 2]; 2];
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
-                    let component_i = self.perm_x[(i + di) & 255] as usize;
-                    let component_j = self.perm_y[(j + dj) & 255] as usize;
-                    let component_k = self.perm_z[(k + dk) & 255] as usize;
+                    let component_i = self.perm_x[(i + di as f64) as usize & 255] as usize;
+                    let component_j = self.perm_y[(j + dj as f64) as usize & 255] as usize;
+                    let component_k = self.perm_z[(k + dk as f64) as usize & 255] as usize;
                     c[di][dj][dk] = self.random_vectors[component_i ^ component_j ^ component_k];
                 }
             }
@@ -135,22 +130,3 @@ fn perlin_interpolation(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     }
     return accum;
 }
-
-// fn trilinear_interpolation(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
-//     let mut acc = 0.;
-//     for i in 0..2 {
-//         for j in 0..2 {
-//             for k in 0..2 {
-//                 let i_float = i as f64;
-//                 let j_float = j as f64;
-//                 let k_float = k as f64;
-//                 acc += (i_float * u + (1. - i_float) * (1. - u))
-//                     * (j_float * v + (1. - j_float) * (1. - v))
-//                     * (k_float * w + (1. - k_float) * (1. - w))
-//                     * c[i][j][k];
-//             }
-//         }
-//     }
-
-//     return acc;
-// }
