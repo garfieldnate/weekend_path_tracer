@@ -85,6 +85,20 @@ impl Perlin {
         // return trilinear_interpolation(c, u, v, w);
         return perlin_interpolation(c, u, v, w);
     }
+
+    pub fn turbulence(&self, p: Vec3, depth: u8) -> f64 {
+        let mut accum = 0.0;
+        let mut temp_p = p;
+        let mut weight = 1.0;
+
+        for _i in 0..depth {
+            accum += weight * self.noise(temp_p);
+            weight *= 0.5;
+            temp_p *= 2.;
+        }
+
+        return accum.abs();
+    }
 }
 
 fn generate_permutation() -> [u8; 256] {
